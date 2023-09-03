@@ -1,0 +1,16 @@
+/* Sizing of map container */
+.leaflet-container {
+  height: calc(
+    100vh - 64px - 69px
+  ); /* Default calculation for non-phone devices */
+  overflow: hidden; /* Hide overflow to prevent scrollbars */
+}
+
+/* Adjust the calculation for phones in portrait orientation */
+@media (max-width: 768px) and (orientation: portrait) {
+  .leaflet-container {
+    height: calc(
+      100vh - 64px - 88px
+    ); /* Modify the calculation for phones in portrait orientation */
+  }
+}
