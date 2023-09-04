@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Button, Col, Modal, Row, Typography, Image } from "antd";
+import {
+  Button,
+  Col,
+  Modal,
+  Row,
+  Typography,
+  Image,
+  Statistic,
+  Divider,
+} from "antd";
 import { Icon } from "leaflet";
 import {
   MapContainer,
@@ -9,15 +18,23 @@ import {
   Polyline,
 } from "react-leaflet";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
+import CountUp from "react-countup";
 
 import { db } from "../firebase/fbconfig";
 import "leaflet/dist/leaflet.css";
 import "../styles/HomeStyles.css";
+import Title from "antd/es/skeleton/Title";
 
 // Random lanmark global var
 let landmark = null;
+// Var for modal
+let scoreModal = null;
 
-const MapComponent = () => {
+// Vats for guess score and distance
+let guessScore = null;
+let guessText = null;
+
+const MapComponent = ({ openModalFunc }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [enableMarkerPlacement, setEnableMarkerPlacement] = useState(true);
   const [lat, setLat] = useState(null);
@@ -67,9 +84,11 @@ const MapComponent = () => {
       setMarkerPosition(e.latlng); // Update marker position on click
     }
   };
-
+  var actualLatLng;
   // Create a LatLng object
-  const actualLatLng = [lat, lon];
+  if (lat && lon) {
+    actualLatLng = [lat, lon];
+  }
 
   return (
     <div>
@@ -113,6 +132,7 @@ const MapComponent = () => {
               const score = calculateScore(markerPosition);
               console.log(score);
               setEnableMarkerPlacement(false);
+              openModalFunc();
             }}
           >
             Submit
@@ -195,7 +215,7 @@ const calculateScore = (markerPosition) => {
   const meterDistance = Math.round(distance * 1000 * 100) / 100;
   const formattedDistance = Math.round(distance * 100) / 100;
 
-  const returnText = `Score: ${formattedScore} ${
+  const returnText = `${
     meterDistance >= 1000
       ? `${(Math.round(distance * 100) / 100).toLocaleString("en-US")}KM (${(
           Math.round(distance * 0.621371 * 100) / 100
@@ -205,54 +225,19 @@ const calculateScore = (markerPosition) => {
         ).toLocaleString("en-US")}ft)`
   }`;
 
+  guessScore = score;
+  guessText = returnText;
   return returnText;
-};
-
-const ScoreModalComponent = (score, meterDistance, open = false, distance) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [description, setDesc] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
-
-  useEffect(() => {
-    // This code will run immediately when the component is mounted
-    // ...
-
-    // Wait for 1000 milliseconds (1 second) before running the next code
-    const timeoutId = setTimeout(() => {
-      // This code will run after a 1-second delay
-      setDesc(landmark.description);
-      setImageUrl(landmark.imageUrl);
-    }, 1000);
-  });
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const formattedScore = Math.max(score, 0); // Ensure the score is not negative
-
-  return (
-    <Modal open={open || isModalOpen} onCancel={handleCancel}>
-      Score: {score} {description} <Image src={imageUrl}></Image>{" "}
-      <p>
-        Score: ${formattedScore} $
-        {meterDistance >= 1000
-          ? `${(Math.round(distance * 100) / 100).toLocaleString(
-              "en-US"
-            )}KM (${(
-              Math.round(distance * 0.621371 * 100) / 100
-            ).toLocaleString("en-US")}Mi)`
-          : `${meterDistance.toLocaleString("en-US")}M (${(
-              Math.round(meterDistance * 3.2808 * 100) / 100
-            ).toLocaleString("en-US")}ft)`}
-        ;
-      </p>
-    </Modal>
-  );
 };
 
 function Home() {
   const [randomLandmark, setRandomLandmark] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [description, setDesc] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
+
+  const formatter = (value) => <CountUp end={value} separator="," />;
+  const { Title } = Typography;
 
   useEffect(() => {
     // Call getRandomLandmark once when the page loads
@@ -261,9 +246,24 @@ function Home() {
         landmark = landmarkData;
         setRandomLandmark(landmarkData);
       }
+      // This code will run immediately when the component is mounted
+      const timeoutId = setTimeout(() => {
+        // This code will run after a 1-second delay
+        setDesc(landmark.description);
+        setImageUrl(landmark.imageUrl);
+      }, 1000);
     });
   }, []);
 
+  // Function to update isModalOpen state
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+  const guessScoreInside = guessScore;
+  const guessTextInside = guessText;
   return (
     <div>
       {/* Display the random landmark data */}
@@ -276,9 +276,22 @@ function Home() {
           </Row>
         </div>
       )}
-      <ScoreModalComponent></ScoreModalComponent>
+      <Modal
+        style={{ textAlign: "center" }}
+        open={isModalOpen}
+        onCancel={closeModal}
+      >
+        <Divider plain>
+          <Title level={2}>Score</Title>
+        </Divider>
+        <br />
+        <Statistic value={guessScoreInside} formatter={formatter} />
+        <Image src={imageUrl}></Image>
+        <Title level={4}>{description}</Title>
+        <Title level={5}>{guessTextInside}</Title>
+      </Modal>
       <div className="map">
-        <MapComponent />
+        <MapComponent openModalFunc={openModal} />
       </div>
       {/* <Button onClick={getRandomLandmark}>Test</Button> */}
     </div>
