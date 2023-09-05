@@ -17,13 +17,19 @@ import {
   useMapEvents,
   Polyline,
 } from "react-leaflet";
-import { collection, getDocs, query, where, limit } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  limit,
+  getCountFromServer,
+} from "firebase/firestore";
 import CountUp from "react-countup";
 
 import { db } from "../firebase/fbconfig";
 import "leaflet/dist/leaflet.css";
 import "../styles/HomeStyles.css";
-import Title from "antd/es/skeleton/Title";
 
 // Random lanmark global var
 let landmark = null;
@@ -41,21 +47,16 @@ const MapComponent = ({ openModalFunc }) => {
   const [lon, setLon] = useState(null);
 
   useEffect(() => {
-    // This code will run immediately when the component is mounted
-    // ...
-
-    // Wait for 1000 milliseconds (1 second) before running the next code
+    // Wait for 1000 milliseconds (1 second) before running the next code. This is to make sure the landmark variable has been initialized
     const timeoutId = setTimeout(() => {
-      // This code will run after a 1-second delay
       setLat(parseFloat(landmark.latitude));
       setLon(parseFloat(landmark.longitude));
     }, 1000);
 
-    // You can clean up the timeout when the component unmounts or when you no longer need it
+    //Cleaning up the timeout when the component unmounts or when you no longer need it
     return () => clearTimeout(timeoutId);
-
-    // Make sure to include landmark as a dependency if it's not already
   }, []);
+
   const blueIcon = new Icon({
     iconUrl:
       "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
@@ -106,7 +107,7 @@ const MapComponent = ({ openModalFunc }) => {
         {/* Conditionally render the marker */}
         {markerPosition && <Marker position={markerPosition} icon={blueIcon} />}
 
-        {/* Conditionally render the actual marker and polyline */}
+        {/* Conditionally render the actual marker and polyline. If marker placement is enabled, this is disabled */}
         {!enableMarkerPlacement && (
           <>
             <Marker position={actualLatLng} icon={greenIcon} />
@@ -129,8 +130,7 @@ const MapComponent = ({ openModalFunc }) => {
             size="large"
             disabled={!enableMarkerPlacement}
             onClick={() => {
-              const score = calculateScore(markerPosition);
-              console.log(score);
+              calculateScore(markerPosition);
               setEnableMarkerPlacement(false);
               openModalFunc();
             }}
@@ -151,14 +151,22 @@ function MapClickHandler({ onClick }) {
 
   return null; // This component doesn't render anything, it's just for handling events
 }
+
+// Getting random landmark from firestore
 async function getRandomLandmark() {
   try {
-    // Generate a random number between 1 and 96
-    const randomValue = Math.floor(Math.random() * 96) + 1;
+    const landmarksCollection = collection(db, "landmarks");
+
+    // Getting number of documents in the collection so randomizing works
+    const snapshot = await getCountFromServer(landmarksCollection);
+    const numberOfDocuments = snapshot.data().count;
+
+    // Generate a random number between 1 and length of the collection
+    const randomValue = Math.floor(Math.random() * numberOfDocuments) + 1;
 
     // Query documents with 'random' field
     const q = query(
-      collection(db, "landmarks"),
+      landmarksCollection,
       where("random", "==", randomValue), // Query based on the 'random' field
       limit(1)
     );
@@ -172,9 +180,6 @@ async function getRandomLandmark() {
 
     // Get the first document from the query results
     const randomLandmarkData = querySnapshot.docs[0].data();
-
-    // console.log("Random Landmark:");
-    // console.log(randomLandmarkData);
 
     return randomLandmarkData;
   } catch (error) {
@@ -284,7 +289,6 @@ function Home() {
         <Divider plain>
           <Title level={2}>Score</Title>
         </Divider>
-        <br />
         <Statistic value={guessScoreInside} formatter={formatter} />
         <Image src={imageUrl}></Image>
         <Title level={4}>{description}</Title>
