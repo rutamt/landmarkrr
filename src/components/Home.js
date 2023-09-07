@@ -256,8 +256,7 @@ const calculateScore = (markerPosition) => {
 
   // Calculate the score
   const max_distance = 3000; // Maximum possible distance between two points
-  const score = Math.round(1000 * (1 - distance / max_distance));
-  const formattedScore = Math.max(score, 0); // Ensure the score is not negative
+  const score = Math.max(Math.round(1000 * (1 - distance / max_distance)), 0);
 
   const meterDistance = Math.round(distance * 1000 * 100) / 100;
   const formattedDistance = Math.round(distance * 100) / 100;
@@ -281,12 +280,28 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [description, setDesc] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
-  const [numRounds, setNumRounds] = useState(1);
-  const [currentRound, setCurrentRound] = useState(1); // Initialize to the first round
   const [resetCounter, setResetCounter] = useState(0); // Used for resetting the MapComponent
+  // Initialize state with values from localStorage or defaults
+  const [currentRound, setCurrentRound] = useState(
+    localStorage.getItem("currentRound")
+      ? parseInt(localStorage.getItem("currentRound"))
+      : 1
+  );
+
+  const [numRounds, setNumRounds] = useState(
+    localStorage.getItem("numRounds")
+      ? parseInt(localStorage.getItem("numRounds"))
+      : 1
+  );
 
   const formatter = (value) => <CountUp end={value} separator="," />;
   const { Title } = Typography;
+
+  // Update localStorage when the state changes
+  useEffect(() => {
+    localStorage.setItem("currentRound", currentRound.toString());
+    localStorage.setItem("numRounds", numRounds.toString());
+  }, [currentRound, numRounds]);
 
   useEffect(() => {
     // Call getRandomLandmark once when the page loads
@@ -338,6 +353,12 @@ function Home() {
       alert("Game Over! All rounds completed.");
     }
   };
+  // Function to reset the game
+  const resetGame = () => {
+    // Reset the state and update localStorage
+    setCurrentRound(1);
+    setNumRounds(1);
+  };
 
   // Function used in the RoundForm to get the response
   const onRoundFormFinish = (values) => {
@@ -370,7 +391,7 @@ function Home() {
   console.log(numRounds, "numrounds");
   return (
     <>
-      {numRounds && <RoundForm onFinish={onRoundFormFinish} />}
+      {numRounds === 1 && <RoundForm onFinish={onRoundFormFinish} />}
 
       {/* Display the random landmark data */}
       {randomLandmark && (
@@ -404,6 +425,7 @@ function Home() {
           key={resetCounter}
         />
       </div>
+      <Button onClick={resetGame}>Reset</Button>
       {/* <Button onClick={getRandomLandmark}>Test</Button> */}
     </>
   );
