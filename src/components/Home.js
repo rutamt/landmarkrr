@@ -362,6 +362,9 @@ function Home() {
     setIsModalOpen(false);
     startNewRound(); // Start a new round after submitting the score modal
   };
+  const modalCanceled = () => {
+    setIsModalOpen(false);
+  };
   const guessScoreInside = guessScore;
   const guessTextInside = guessText;
   console.log(numRounds, "numrounds");
@@ -376,13 +379,14 @@ function Home() {
             <Col span={12}>
               <Typography>Name: {randomLandmark.name}</Typography>
             </Col>
+            <Col span={12}>Round: {currentRound}</Col>
           </Row>
         </div>
       )}
       <Modal
         style={{ textAlign: "center" }}
         open={isModalOpen}
-        onCancel={closeModal}
+        onCancel={modalCanceled}
         onOk={closeModal}
       >
         <Divider plain>
