@@ -42,7 +42,7 @@ let scoreModal = null;
 let guessScore = null;
 let guessText = null;
 
-const MapComponent = ({ openModalFunc }) => {
+const MapComponent = ({ openModalFunc, onReset }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [enableMarkerPlacement, setEnableMarkerPlacement] = useState(true);
   const [lat, setLat] = useState(null);
@@ -58,6 +58,18 @@ const MapComponent = ({ openModalFunc }) => {
     //Cleaning up the timeout when the component unmounts or when you no longer need it
     return () => clearTimeout(timeoutId);
   }, []);
+
+  // Function to reset the MapComponent
+  const resetMapComponent = () => {
+    // Clear the marker position and re-enable marker placement
+    setMarkerPosition(null);
+    setEnableMarkerPlacement(true);
+
+    // Call onReset function provided as a prop (if it exists)
+    if (onReset) {
+      onReset();
+    }
+  };
 
   const blueIcon = new Icon({
     iconUrl:
@@ -271,6 +283,7 @@ function Home() {
   const [imageUrl, setImageUrl] = useState(null);
   const [numRounds, setNumRounds] = useState(1);
   const [currentRound, setCurrentRound] = useState(1); // Initialize to the first round
+  const [resetCounter, setResetCounter] = useState(0); // Used for resetting the MapComponent
 
   const formatter = (value) => <CountUp end={value} separator="," />;
   const { Title } = Typography;
@@ -316,6 +329,8 @@ function Home() {
         }, 1000);
       });
 
+      // Reset the map
+      handleResetMapComponent();
       // Increment the current round
       setCurrentRound(currentRound + 1);
     } else {
@@ -331,6 +346,12 @@ function Home() {
   // Function to update the number of rounds when the user selects a value
   const handleNumRoundsChange = (value) => {
     setNumRounds(value);
+  };
+
+  // Function to reset the MapComponent
+  const handleResetMapComponent = () => {
+    // Update the reset counter to trigger a reset in MapComponent
+    setResetCounter(resetCounter + 1);
   };
 
   // Function to update isModalOpen state. This is for the score modal
@@ -362,6 +383,7 @@ function Home() {
         style={{ textAlign: "center" }}
         open={isModalOpen}
         onCancel={closeModal}
+        onOk={closeModal}
       >
         <Divider plain>
           <Title level={2}>Score</Title>
@@ -372,7 +394,11 @@ function Home() {
         <Title level={5}>{guessTextInside}</Title>
       </Modal>
       <div className="map">
-        <MapComponent openModalFunc={openModal} />
+        <MapComponent
+          openModalFunc={openModal}
+          onReset={handleResetMapComponent}
+          key={resetCounter}
+        />
       </div>
       {/* <Button onClick={getRandomLandmark}>Test</Button> */}
     </>
