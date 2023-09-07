@@ -8,6 +8,8 @@ import {
   Image,
   Statistic,
   Divider,
+  Form,
+  InputNumber,
 } from "antd";
 import { Icon } from "leaflet";
 import {
@@ -143,6 +145,34 @@ const MapComponent = ({ openModalFunc }) => {
   );
 };
 
+const RoundForm = ({ onFinish }) => {
+  const [open, setOpen] = useState(true);
+  const [form] = Form.useForm();
+  const { Title } = Typography;
+  const onOk = () => {
+    form.submit();
+    setOpen(false);
+  };
+  return (
+    <>
+      <Modal open={open} onOk={onOk}>
+        <Title level={1}>Round select</Title>
+        <Title level={3}>How many rounds do you wish to play?</Title>
+        <Form form={form} onFinish={onFinish}>
+          <Form.Item
+            name={"roundSelection"}
+            rules={[
+              { required: true, message: "Please select a number of rounds" },
+            ]}
+          >
+            <InputNumber min={1} defaultValue={1}></InputNumber>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  );
+};
+
 // Custom component to handle map click event
 function MapClickHandler({ onClick }) {
   const map = useMapEvents({
@@ -232,7 +262,6 @@ const calculateScore = (markerPosition) => {
 
   guessScore = score;
   guessText = returnText;
-  return returnText;
 };
 
 function Home() {
@@ -240,6 +269,8 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [description, setDesc] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
+  const [numRounds, setNumRounds] = useState(1);
+  const [currentRound, setCurrentRound] = useState(1); // Initialize to the first round
 
   const formatter = (value) => <CountUp end={value} separator="," />;
   const { Title } = Typography;
@@ -260,17 +291,63 @@ function Home() {
     });
   }, []);
 
-  // Function to update isModalOpen state
+  // Function to start a new round
+  const startNewRound = () => {
+    // Check if all rounds are completed
+
+    if (currentRound < numRounds) {
+      // Start a new round by resetting the game state
+      // You should reset the marker, enableMarkerPlacement, etc.
+
+      //   setMarkerPosition(null);
+      //   setEnableMarkerPlacement(true);
+
+      // Call getRandomLandmark to get a new landmark for the next round
+      getRandomLandmark().then((landmarkData) => {
+        if (landmarkData) {
+          landmark = landmarkData;
+          setRandomLandmark(landmarkData);
+        }
+        // This code will run immediately when the component is mounted
+        const timeoutId = setTimeout(() => {
+          // This code will run after a 1-second delay
+          setDesc(landmark.description);
+          setImageUrl(landmark.imageUrl);
+        }, 1000);
+      });
+
+      // Increment the current round
+      setCurrentRound(currentRound + 1);
+    } else {
+      // All rounds are completed, you can display a game over message or take other actions
+      alert("Game Over! All rounds completed.");
+    }
+  };
+
+  // Function used in the RoundForm to get the response
+  const onRoundFormFinish = (values) => {
+    handleNumRoundsChange(values.roundSelection);
+  };
+  // Function to update the number of rounds when the user selects a value
+  const handleNumRoundsChange = (value) => {
+    setNumRounds(value);
+  };
+
+  // Function to update isModalOpen state. This is for the score modal
   const openModal = () => {
     setIsModalOpen(true);
   };
   const closeModal = () => {
     setIsModalOpen(false);
+    startNewRound(); // Start a new round after submitting the score modal
   };
   const guessScoreInside = guessScore;
   const guessTextInside = guessText;
+  console.log(numRounds, "numrounds");
   return (
-    <div>
+    <>
+      {numRounds && <RoundForm onFinish={onRoundFormFinish} />}
+
       {/* Display the random landmark data */}
       {randomLandmark && (
         <div>
@@ -298,7 +375,7 @@ function Home() {
         <MapComponent openModalFunc={openModal} />
       </div>
       {/* <Button onClick={getRandomLandmark}>Test</Button> */}
-    </div>
+    </>
   );
 }
 
