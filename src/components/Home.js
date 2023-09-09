@@ -10,6 +10,7 @@ import {
   Divider,
   Form,
   InputNumber,
+  Space,
 } from "antd";
 import { Icon } from "leaflet";
 import {
@@ -41,8 +42,9 @@ let scoreModal = null;
 // Vats for guess score and distance
 let guessScore = null;
 let guessText = null;
+let guessDistance = null;
 
-const MapComponent = ({ openModalFunc, onReset }) => {
+const MapComponent = ({ openModalFunc, onReset, nextRound }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [enableMarkerPlacement, setEnableMarkerPlacement] = useState(true);
   const [lat, setLat] = useState(null);
@@ -139,18 +141,23 @@ const MapComponent = ({ openModalFunc, onReset }) => {
       </MapContainer>
       {markerPosition && (
         <div style={{ textAlign: "center" }}>
-          <Button
-            type="primary"
-            size="large"
-            disabled={!enableMarkerPlacement}
-            onClick={() => {
-              calculateScore(markerPosition);
-              setEnableMarkerPlacement(false);
-              openModalFunc();
-            }}
-          >
-            Submit
-          </Button>
+          <Space direction="horizontal">
+            <Button
+              type="primary"
+              size="large"
+              disabled={!enableMarkerPlacement}
+              onClick={() => {
+                calculateScore(markerPosition);
+                setEnableMarkerPlacement(false);
+                openModalFunc();
+              }}
+            >
+              Submit
+            </Button>
+            {!enableMarkerPlacement && (
+              <Button onClick={nextRound}>Next round</Button>
+            )}
+          </Space>
         </div>
       )}
     </div>
@@ -273,6 +280,7 @@ const calculateScore = (markerPosition) => {
 
   guessScore = score;
   guessText = returnText;
+  guessDistance = formattedDistance;
 };
 
 function Home() {
@@ -281,6 +289,7 @@ function Home() {
   const [description, setDesc] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [resetCounter, setResetCounter] = useState(0); // Used for resetting the MapComponent
+
   // Initialize state with values from localStorage or defaults
   const [currentRound, setCurrentRound] = useState(
     localStorage.getItem("currentRound")
@@ -294,6 +303,16 @@ function Home() {
       : 1
   );
 
+  const [distance, setDistance] = useState(
+    localStorage.getItem("distance")
+      ? parseInt(localStorage.getItem("distance"))
+      : 0
+  );
+
+  const [score, setScore] = useState(
+    localStorage.getItem("score") ? parseInt(localStorage.getItem("score")) : 0
+  );
+
   const formatter = (value) => <CountUp end={value} separator="," />;
   const { Title } = Typography;
 
@@ -301,7 +320,9 @@ function Home() {
   useEffect(() => {
     localStorage.setItem("currentRound", currentRound.toString());
     localStorage.setItem("numRounds", numRounds.toString());
-  }, [currentRound, numRounds]);
+    localStorage.setItem("distance", distance.toString());
+    localStorage.setItem("score", score.toString());
+  }, [currentRound, numRounds, distance, score]);
 
   useEffect(() => {
     // Call getRandomLandmark once when the page loads
@@ -325,10 +346,9 @@ function Home() {
 
     if (currentRound < numRounds) {
       // Start a new round by resetting the game state
-      // You should reset the marker, enableMarkerPlacement, etc.
 
-      //   setMarkerPosition(null);
-      //   setEnableMarkerPlacement(true);
+      setScore(score + guessScore);
+      setDistance(distance + guessDistance);
 
       // Call getRandomLandmark to get a new landmark for the next round
       getRandomLandmark().then((landmarkData) => {
@@ -358,6 +378,8 @@ function Home() {
     // Reset the state and update localStorage
     setCurrentRound(1);
     setNumRounds(1);
+    setDistance(1);
+    setScore(0);
   };
 
   // Function used in the RoundForm to get the response
@@ -388,7 +410,8 @@ function Home() {
   };
   const guessScoreInside = guessScore;
   const guessTextInside = guessText;
-  console.log(numRounds, "numrounds");
+  console.log(`Score: ${score}, distance: ${distance}`);
+
   return (
     <>
       {numRounds === 1 && <RoundForm onFinish={onRoundFormFinish} />}
@@ -397,10 +420,17 @@ function Home() {
       {randomLandmark && (
         <div>
           <Row>
-            <Col span={12}>
+            <Col span={4}>
               <Typography>Name: {randomLandmark.name}</Typography>
             </Col>
-            <Col span={12}>Round: {currentRound}</Col>
+            <Col span={4}>Round: {currentRound}</Col>
+            <Col span={4}>Score: {score}</Col>
+            <Col span={4}>
+              Avg distance: {Math.round(distance / currentRound)}KM
+            </Col>
+            <Col span={4}>
+              <Button onClick={resetGame}>Reset</Button>
+            </Col>
           </Row>
         </div>
       )}
@@ -421,11 +451,11 @@ function Home() {
       <div className="map">
         <MapComponent
           openModalFunc={openModal}
+          nextRound={startNewRound}
           onReset={handleResetMapComponent}
           key={resetCounter}
         />
       </div>
-      <Button onClick={resetGame}>Reset</Button>
       {/* <Button onClick={getRandomLandmark}>Test</Button> */}
     </>
   );
