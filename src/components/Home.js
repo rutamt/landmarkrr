@@ -33,6 +33,7 @@ import CountUp from "react-countup";
 import { db } from "../firebase/fbconfig";
 import "leaflet/dist/leaflet.css";
 import "../styles/HomeStyles.css";
+import End from "./End";
 
 // Random lanmark global var
 let landmark = null;
@@ -43,6 +44,9 @@ let scoreModal = null;
 let guessScore = null;
 let guessText = null;
 let guessDistance = null;
+
+// The lat and lon of the user's guess
+let guessLatLon = null;
 
 const MapComponent = ({ openModalFunc, onReset, nextRound }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
@@ -247,6 +251,9 @@ const calculateScore = (markerPosition) => {
   const landmarkLatitude = landmark.latitude;
   const landmarkLongitude = landmark.longitude;
 
+  // Setting the guessLatLon variable for use in a localStorage variable
+  guessLatLon = [guessLatitude, guessLongitude];
+
   const guess_lat_rad = guessLatitude * (Math.PI / 180);
   const guess_lon_rad = guessLongitude * (Math.PI / 180);
   const real_lat_rad = landmarkLatitude * (Math.PI / 180);
@@ -289,6 +296,7 @@ function Home() {
   const [description, setDesc] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [resetCounter, setResetCounter] = useState(0); // Used for resetting the MapComponent
+  const [gameOver, setGameOver] = useState(false);
 
   // Initialize state with values from localStorage or defaults
   const [currentRound, setCurrentRound] = useState(
@@ -313,8 +321,22 @@ function Home() {
     localStorage.getItem("score") ? parseInt(localStorage.getItem("score")) : 0
   );
 
+  const [guessLatLons, setGuessLatLons] = useState(
+    localStorage.getItem("guessLatLons")
+      ? JSON.parse(localStorage.getItem("guessLatLons"))
+      : []
+  );
+
+  const [actualLatLons, setActualLatLons] = useState(
+    localStorage.getItem("actualLatLons")
+      ? JSON.parse(localStorage.getItem("actualLatLons"))
+      : []
+  );
+
   const formatter = (value) => <CountUp end={value} separator="," />;
   const { Title } = Typography;
+
+  // For redirection
 
   // Update localStorage when the state changes
   useEffect(() => {
@@ -323,6 +345,12 @@ function Home() {
     localStorage.setItem("distance", distance.toString());
     localStorage.setItem("score", score.toString());
   }, [currentRound, numRounds, distance, score]);
+
+  //   Updating the lists when the state changes
+  useEffect(() => {
+    localStorage.setItem("guessLatLons", JSON.stringify(guessLatLons));
+    localStorage.setItem("actualLatLons", JSON.stringify(actualLatLons));
+  }, [guessLatLons, actualLatLons]);
 
   useEffect(() => {
     // Call getRandomLandmark once when the page loads
@@ -345,7 +373,17 @@ function Home() {
     // Check if all rounds are completed
 
     if (currentRound < numRounds) {
-      // Start a new round by resetting the game state
+      // Adding the lat and lon for guess and actual to localStorage
+      const actualLatLonOld = [
+        ...actualLatLons,
+        [landmark.latitude, landmark.longitude],
+      ];
+      //   console.log(actualLatLonOld, "old actual");
+      setActualLatLons(actualLatLonOld);
+
+      const guessLatLonOld = [...guessLatLons, guessLatLon];
+      //   console.log(guessLatLonOld, "guess old");
+      setGuessLatLons(guessLatLonOld);
 
       setScore(score + guessScore);
       setDistance(distance + guessDistance);
@@ -356,6 +394,7 @@ function Home() {
           landmark = landmarkData;
           setRandomLandmark(landmarkData);
         }
+
         // This code will run immediately when the component is mounted
         const timeoutId = setTimeout(() => {
           // This code will run after a 1-second delay
@@ -370,7 +409,9 @@ function Home() {
       setCurrentRound(currentRound + 1);
     } else {
       // All rounds are completed, you can display a game over message or take other actions
-      alert("Game Over! All rounds completed.");
+      console.log("game over");
+      setGameOver(true);
+      //return redirect("/end");
     }
   };
   // Function to reset the game
@@ -380,6 +421,8 @@ function Home() {
     setNumRounds(1);
     setDistance(1);
     setScore(0);
+    setGuessLatLons([]);
+    setActualLatLons([]);
   };
 
   // Function used in the RoundForm to get the response
@@ -410,53 +453,57 @@ function Home() {
   };
   const guessScoreInside = guessScore;
   const guessTextInside = guessText;
-  console.log(`Score: ${score}, distance: ${distance}`);
 
   return (
     <>
-      {numRounds === 1 && <RoundForm onFinish={onRoundFormFinish} />}
+      {!gameOver && (
+        <>
+          {numRounds === 1 && <RoundForm onFinish={onRoundFormFinish} />}
 
-      {/* Display the random landmark data */}
-      {randomLandmark && (
-        <div>
-          <Row>
-            <Col span={4}>
-              <Typography>Name: {randomLandmark.name}</Typography>
-            </Col>
-            <Col span={4}>Round: {currentRound}</Col>
-            <Col span={4}>Score: {score}</Col>
-            <Col span={4}>
-              Avg distance: {Math.round(distance / currentRound)}KM
-            </Col>
-            <Col span={4}>
-              <Button onClick={resetGame}>Reset</Button>
-            </Col>
-          </Row>
-        </div>
+          {/* Display the random landmark data */}
+          {randomLandmark && (
+            <div>
+              <Row>
+                <Col span={4}>
+                  <Typography>Name: {randomLandmark.name}</Typography>
+                </Col>
+                <Col span={4}>Round: {currentRound}</Col>
+                <Col span={4}>Score: {score}</Col>
+                <Col span={4}>
+                  Avg distance: {Math.round(distance / currentRound)}KM
+                </Col>
+                <Col span={4}>
+                  <Button onClick={resetGame}>Reset</Button>
+                </Col>
+              </Row>
+            </div>
+          )}
+          <Modal
+            style={{ textAlign: "center" }}
+            open={isModalOpen}
+            onCancel={modalCanceled}
+            onOk={closeModal}
+          >
+            <Divider plain>
+              <Title level={2}>Score</Title>
+            </Divider>
+            <Statistic value={guessScoreInside} formatter={formatter} />
+            <Image src={imageUrl}></Image>
+            <Title level={4}>{description}</Title>
+            <Title level={5}>{guessTextInside}</Title>
+          </Modal>
+          <div className="map">
+            <MapComponent
+              openModalFunc={openModal}
+              nextRound={startNewRound}
+              onReset={handleResetMapComponent}
+              key={resetCounter}
+            />
+          </div>
+          {/* <Button onClick={getRandomLandmark}>Test</Button> */}
+        </>
       )}
-      <Modal
-        style={{ textAlign: "center" }}
-        open={isModalOpen}
-        onCancel={modalCanceled}
-        onOk={closeModal}
-      >
-        <Divider plain>
-          <Title level={2}>Score</Title>
-        </Divider>
-        <Statistic value={guessScoreInside} formatter={formatter} />
-        <Image src={imageUrl}></Image>
-        <Title level={4}>{description}</Title>
-        <Title level={5}>{guessTextInside}</Title>
-      </Modal>
-      <div className="map">
-        <MapComponent
-          openModalFunc={openModal}
-          nextRound={startNewRound}
-          onReset={handleResetMapComponent}
-          key={resetCounter}
-        />
-      </div>
-      {/* <Button onClick={getRandomLandmark}>Test</Button> */}
+      {gameOver && <End />}
     </>
   );
 }
