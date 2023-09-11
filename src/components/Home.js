@@ -63,7 +63,7 @@ const MapComponent = ({ openModalFunc, onReset, nextRound }) => {
 
     //Cleaning up the timeout when the component unmounts or when you no longer need it
     return () => clearTimeout(timeoutId);
-  }, []);
+  }, [landmark]);
 
   // Function to reset the MapComponent
   const resetMapComponent = () => {
@@ -408,10 +408,22 @@ function Home() {
       // Increment the current round
       setCurrentRound(currentRound + 1);
     } else {
-      // All rounds are completed, you can display a game over message or take other actions
-      console.log("game over");
+      // Adding the lat and lon for guess and actual to localStorage
+      const actualLatLonOld = [
+        ...actualLatLons,
+        [landmark.latitude, landmark.longitude],
+      ];
+      //   console.log(actualLatLonOld, "old actual");
+      setActualLatLons(actualLatLonOld);
+
+      const guessLatLonOld = [...guessLatLons, guessLatLon];
+      //   console.log(guessLatLonOld, "guess old");
+      setGuessLatLons(guessLatLonOld);
+
+      setScore(score + guessScore);
+      setDistance(distance + guessDistance);
+
       setGameOver(true);
-      //return redirect("/end");
     }
   };
   // Function to reset the game
@@ -423,6 +435,8 @@ function Home() {
     setScore(0);
     setGuessLatLons([]);
     setActualLatLons([]);
+    setGameOver(false);
+    getRandomLandmark(); //TODO: After resetting the game, it uses the same landmark as the last one from before the game ended
   };
 
   // Function used in the RoundForm to get the response
@@ -467,7 +481,9 @@ function Home() {
                 <Col span={4}>
                   <Typography>Name: {randomLandmark.name}</Typography>
                 </Col>
-                <Col span={4}>Round: {currentRound}</Col>
+                <Col span={4}>
+                  Round: {currentRound}/{numRounds}
+                </Col>
                 <Col span={4}>Score: {score}</Col>
                 <Col span={4}>
                   Avg distance: {Math.round(distance / currentRound)}KM
@@ -503,7 +519,7 @@ function Home() {
           {/* <Button onClick={getRandomLandmark}>Test</Button> */}
         </>
       )}
-      {gameOver && <End />}
+      {gameOver && <End restartFunc={resetGame} />}
     </>
   );
 }
