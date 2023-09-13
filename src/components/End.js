@@ -178,6 +178,16 @@ function End({ restartFunc }) {
     quip = "You're getting there! Keep exploring and guessing.";
   } else if (averageDistance < 350) {
     quip = "Not bad, but you can aim for greater precision.";
+  } else if (averageDistance < 400) {
+    quip = "Keep refining your skills, you're making good progress!";
+  } else if (averageDistance < 500) {
+    quip = "You're on the right path, keep it up!";
+  } else if (averageDistance < 750) {
+    quip = "Your guesswork is improving steadily.";
+  } else if (averageDistance < 1000) {
+    quip = "You're getting closer with each round. Keep exploring!";
+  } else if (averageDistance < 1200) {
+    quip = "You're making progress, but there's room for improvement.";
   } else {
     quip = "You need to study your landmarks!";
   }

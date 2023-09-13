@@ -1,70 +1,62 @@
-# Getting Started with Create React App
+# Landmarkrr
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Landmarkrr Screenshot](screenshot.png)
 
-## Available Scripts
+Welcome to Landmarkrr, a fun and challenging geography game where you test your knowledge of world landmarks by guessing their locations on a map. Landmarkrr is built with React and is a spin on the original LandmarkrJS project.
 
-In the project directory, you can run:
+Play the game now: [landmarkrr.vercel.app](https://landmarkrr.vercel.app/)
 
-### `yarn start`
+## Rules of the Game
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. **Objective**: Your objective is to guess the location of a world landmark as accurately as possible.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+2. **Round System**: Landmarkrr is played in rounds. You can choose the number of rounds you want to play before starting the game.
 
-### `yarn test`
+3. **Guessing**: In each round, you will be presented with a random landmark. Click on the map to place a marker where you think the landmark is located.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+4. **Scoring**: Your score for each round is based on how close your guess is to the actual location of the landmark. The closer you are, the higher your score.
 
-### `yarn build`
+5. **Feedback**: After each round, you will receive feedback on your accuracy, including the distance between your guess and the real location.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+6. **Average Distance**: Your average distance across all rounds is displayed, giving you an idea of your overall accuracy.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+7. **Quips**: The game provides fun quips based on your average distance. Can you earn the title of a geography expert?
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+8. **Restart**: You can restart the game at any time or reset the current round if you want to try again.
 
-### `yarn eject`
+9. **Enjoy**: Landmarkrr is a game of skill and knowledge. Have fun exploring the world and testing your geography skills!
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## How to Play
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Open the game in your web browser: [Landmarkrr Game](https://landmarkrr.vercel.app/)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+2. Choose the number of rounds you want to play.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+3. Click on the map to place your marker where you think the landmark is located.
 
-## Learn More
+4. After each round, review your score, feedback, and quip.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+5. Try to improve your average distance and become a geography expert!
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Technologies Used
 
-### Code Splitting
+- React
+- Ant Design for UI components
+- Leaflet for interactive maps
+- Firebase for data storage
+- Chatgpt for a lot of help with the small stuff!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Credits
 
-### Analyzing the Bundle Size
+- Game developed by RutamT (Me)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Landmark data provided by ChatGPT
 
-### Making a Progressive Web App
+#### Favicon generated using the following graphics from Twitter Twemoji:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Graphics Title: 1f30e.svg
+- Graphics Author: Copyright 2020 Twitter, Inc and other contributors (https://github.com/twitter/twemoji)
+- Graphics Source: https://github.com/twitter/twemoji/blob/master/assets/svg/1f30e.svg
+- Graphics License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Enjoy playing Landmarkrr and exploring the world's landmarks!

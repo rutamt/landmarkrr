@@ -57,8 +57,10 @@ const MapComponent = ({ openModalFunc, onReset, nextRound }) => {
   useEffect(() => {
     // Wait for 1000 milliseconds (1 second) before running the next code. This is to make sure the landmark variable has been initialized
     const timeoutId = setTimeout(() => {
-      setLat(parseFloat(landmark.latitude));
-      setLon(parseFloat(landmark.longitude));
+      if (landmark) {
+        setLat(parseFloat(landmark.latitude));
+        setLon(parseFloat(landmark.longitude));
+      }
     }, 1000);
 
     //Cleaning up the timeout when the component unmounts or when you no longer need it
