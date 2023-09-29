@@ -51,8 +51,8 @@ let guessLatLon = null;
 const MapComponent = ({ openModalFunc, onReset, nextRound }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [enableMarkerPlacement, setEnableMarkerPlacement] = useState(true);
-  const [lat, setLat] = useState(null);
-  const [lon, setLon] = useState(null);
+  const [lat, setLat] = useState(0.1);
+  const [lon, setLon] = useState(0.1);
 
   useEffect(() => {
     // Wait for 1000 milliseconds (1 second) before running the next code. This is to make sure the landmark variable has been initialized
@@ -246,7 +246,6 @@ async function getRandomLandmark() {
 // Calculating score
 const calculateScore = (markerPosition) => {
   // Calculate the score based on markerPosition
-
   // Original values for true lat/lon and guess lat/lon
   const guessLatitude = markerPosition.lat;
   const guessLongitude = markerPosition.lng;
@@ -438,7 +437,20 @@ function Home() {
     setGuessLatLons([]);
     setActualLatLons([]);
     setGameOver(false);
-    getRandomLandmark(); //TODO: After resetting the game, it uses the same landmark as the last one from before the game ended
+    // Call getRandomLandmark to get a new landmark for the next round
+    getRandomLandmark().then((landmarkData) => {
+      if (landmarkData) {
+        landmark = landmarkData;
+        setRandomLandmark(landmarkData);
+      }
+
+      // This code will run immediately when the component is mounted
+      const timeoutId = setTimeout(() => {
+        // This code will run after a 1-second delay
+        setDesc(landmark.description);
+        setImageUrl(landmark.imageUrl);
+      }, 1000);
+    });
   };
 
   // Function used in the RoundForm to get the response
@@ -518,7 +530,6 @@ function Home() {
               key={resetCounter}
             />
           </div>
-          {/* <Button onClick={getRandomLandmark}>Test</Button> */}
         </>
       )}
       {gameOver && <End restartFunc={resetGame} />}
