@@ -373,7 +373,7 @@ function Home() {
   // Function to start a new round
   const startNewRound = () => {
     // Check if all rounds are completed
-
+    console.log(`Current: ${currentRound}, numRounds: ${numRounds}`);
     if (currentRound < numRounds) {
       // Adding the lat and lon for guess and actual to localStorage
       const actualLatLonOld = [

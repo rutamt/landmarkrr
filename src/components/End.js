@@ -7,34 +7,12 @@ import { Icon } from "leaflet";
 import "../styles/EndStyles.css";
 function End({ restartFunc }) {
   // Initialize state with values from localStorage or defaults
-  const [currentRound, setCurrentRound] = useState(
-    localStorage.getItem("currentRound")
-      ? parseInt(localStorage.getItem("currentRound"))
-      : 1
-  );
-  const [numRounds, setNumRounds] = useState(
-    localStorage.getItem("numRounds")
-      ? parseInt(localStorage.getItem("numRounds"))
-      : 1
-  );
-  const [distance, setDistance] = useState(
-    localStorage.getItem("distance")
-      ? parseInt(localStorage.getItem("distance"))
-      : 0
-  );
-  const [score, setScore] = useState(
-    localStorage.getItem("score") ? parseInt(localStorage.getItem("score")) : 0
-  );
-  const [guessLatLons, setGuessLatLons] = useState(
-    localStorage.getItem("guessLatLons")
-      ? JSON.parse(localStorage.getItem("guessLatLons"))
-      : []
-  );
-  const [actualLatLons, setActualLatLons] = useState(
-    localStorage.getItem("actualLatLons")
-      ? JSON.parse(localStorage.getItem("actualLatLons"))
-      : []
-  );
+  const [currentRound, setCurrentRound] = useState(1);
+  const [numRounds, setNumRounds] = useState(1);
+  const [distance, setDistance] = useState(0);
+  const [score, setScore] = useState(0);
+  const [guessLatLons, setGuessLatLons] = useState([]);
+  const [actualLatLons, setActualLatLons] = useState([]);
 
   useEffect(() => {
     // This code will run when the component is mounted
@@ -219,8 +197,8 @@ function End({ restartFunc }) {
       </Title>
       <Title level={3}>{quip}</Title>
       <Title level={4}>
-        In a {numRounds} round game, you scored {Math.round(score / numRounds)}{" "}
-        points per round.
+        In a {numRounds} round game, you scored an average of{" "}
+        {Math.round(score / numRounds)} points per round.
       </Title>
       <Button onClick={restartFunc}>Play again?</Button>
     </div>
